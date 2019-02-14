@@ -71,15 +71,26 @@ Start
      CPSIE  I    					;TExaS voltmeter, scope runs on interrupts
 	 
 loop  
-		LDR R1,= 0x4C4B40;			;Delay function
-dloop	SUBS R1, #1
-		BNE dloop
-		LDR R1,= GPIO_PORTE_DATA_R	;Toggle PE3
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
-		EOR R0, #0x8
+		ORR R0, #0x8
 		STRB R0, [R1]
 		
+		LDR R1,= 0x2DC6C0;			;Delay function (150ms)
+d150	SUBS R1, #1
+		BNE d150
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0x6ACFC0;			;Delay function (350ms)
+d350	SUBS R1, #1
+		BNE d350
+			
 	 B    loop
+	 
 
 
      ALIGN      ; make sure the end of this section is aligned
