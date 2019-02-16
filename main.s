@@ -54,41 +54,225 @@ SYSCTL_RCGCGPIO_R  EQU 0x400FE608
 Start
  ; TExaS_Init sets bus clock at 80 MHz
      BL  TExaS_Init ; voltmeter, scope on PD3
+		
 		LDR R1,= SYSCTL_RCGCGPIO_R	;turn on clock  
 		LDRB R0, [R1]				
-		ORR R0, #0x10				;Turns on clock for Port E
+		ORR R0, #0x30				;Turns on clock for Port E and F
 		STRB R0, [R1]				;Stores result into RCGCGPIO addr
+		
 		NOP
 		NOP
+		
 		LDR R1,= GPIO_PORTE_DIR_R
 		LDRB R0, [R1]
 		ORR R0, #0x8
 		STRB R0, [R1]
+		
 		LDR R1,= GPIO_PORTE_DEN_R
 		LDRB R0, [R1]
-		ORR R0, #0x8
+		ORR R0, #0xC
 		STRB R0, [R1]
+		
+		LDR R1,= GPIO_PORTF_PUR_R
+		LDRB R0, [R1]
+		ORR R0, #0x10
+		STRB R0, [R1]
+		
+		LDR R1,= GPIO_PORTF_CR_R
+		LDRB R0, [R1]
+		ORR R0, #0xFF
+		STRB R0, [R1]
+		
+		LDR R1,= GPIO_PORTF_DIR_R
+		LDRB R0, [R1]
+		AND R0, #0xEF
+		STRB R0, [R1]
+		
+		LDR R1,= GPIO_PORTF_DEN_R
+		LDRB R0, [R1]
+		ORR R0, #0x10
+		STRB R0, [R1]
+		
+		LDR R1,= GPIO_PORTF_LOCK_R
+		LDR R0,= GPIO_LOCK_KEY
+		STR R0, [R1]
+		
+		
+		
+		
      CPSIE  I    					;TExaS voltmeter, scope runs on interrupts
 	 
 loop  
+		
+		;Continuously read PE2 bit for 1 or 0 (1 is pressed, 0 is unpressed)
+rsw		LDR R1,= GPIO_PORTE_DATA_R
+		LDRB R0, [R1]
+		LSR R0, #2
+		SUBS R0,R12, R0
+		BEQ rsw
+		
+		LDR R1,= GPIO_PORTE_DATA_R ;sets PE2 low
+		LDRB R0, [R1]
+		AND R0, #0xFB
+		STRB R0, [R1]
+		
+rsw1	LDR R1,= GPIO_PORTE_DATA_R ;checks for contuious press 
+		LDRB R0, [R1]
+		LSR R0, #2
+		SUBS R0,R12, R0
+		AND R2, #0
+		BEQ update
+		BNE rsw1
+		
+check
+		LDR R1,= GPIO_PORTE_DATA_R
+		LDRB R0, [R1]
+		LSR R0, #2
+		SUBS R0,R0,#1
+		BEQ update
+		BNE noup
+		
+		
+		
+update	
+		;R2 will be our register to indicate which duty cycle we will go to upon pressing the switch
+		; 1=10, 2=30, 3=50, 4=70, 5=90
+	
+		ADD R2,R2,#1
+		
+noup    SUBS R2,R2,#1
+		BEQ dt10
+		
+		SUBS R2,R2,#1
+		BEQ dt30
+		
+		SUBS R2,R2,#1
+		BEQ dt50
+		
+		SUBS R2,R2,#1
+		BEQ dt70
+		
+		SUBS R2,R2,#1
+		BEQ dt90
+		
+		AND R2,R2,#0
+		BEQ update
+	
+		;Duty Cycle for 10 %
+dt10	AND R2,R2,#0
+		ADD R2,R2,#1
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x2DC6C0;			;Delay function (150ms)
-d150	SUBS R1, #1
-		BNE d150
+		
+		LDR R1,= 0xF4240			;Delay function (150ms)
+d10H	SUBS R1, #1
+		BNE d10H
 		
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
 		LDRB R0, [R1]
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x6ACFC0;			;Delay function (350ms)
-d350	SUBS R1, #1
-		BNE d350
-			
+		LDR R1,= 0x895440			;Delay function (350ms)
+d10L	SUBS R1, #1
+		BNE d10L
+		BEQ check
+		;////////////////////////////////////////////////////////
+		
+		;Duty Cycle for 30 %
+dt30	AND R2,R2,#0
+		ADD R2,R2,#2
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
+		LDRB R0, [R1]
+		ORR R0, #0x8
+		STRB R0, [R1]
+		
+		LDR R1,= 0x2DC6C0			;Delay function (150ms)
+d30H	SUBS R1, #1
+		BNE d30H
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0x6ACFC0			;Delay function (350ms)
+d30L	SUBS R1, #1
+		BNE d30L
+		BEQ check
+		;////////////////////////////////////////////////////////
+		
+		;Duty Cycle for 50 %
+dt50	AND R2,R2,#0
+		ADD R2,R2,#3
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
+		LDRB R0, [R1]
+		ORR R0, #0x8
+		STRB R0, [R1]
+		
+		LDR R1,= 0x4C4B40			;Delay function (150ms)
+d50H	SUBS R1, #1
+		BNE d50H
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0x4C4B40			;Delay function (350ms)
+d50L	SUBS R1, #1
+		BNE d50L
+		BEQ check
+		;////////////////////////////////////////////////////////
+		
+		;Duty Cycle for 70 %
+dt70	AND R2,R2,#0
+		ADD R2,R2,#4
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
+		LDRB R0, [R1]
+		ORR R0, #0x8
+		STRB R0, [R1]
+		
+		LDR R1,= 0x6ACFC0			;Delay function (150ms)
+d70H	SUBS R1, #1
+		BNE d70H
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0x2DC6C0			;Delay function (350ms)
+d70L	SUBS R1, #1
+		BNE d70L
+		BEQ check
+		;////////////////////////////////////////////////////////
+		
+		;Duty Cycle for 90 %
+dt90	AND R2,R2,#0
+		ADD R2,R2,#5
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
+		LDRB R0, [R1]
+		ORR R0, #0x8
+		STRB R0, [R1]
+		
+		LDR R1,= 0x895440			;Delay function (150ms)
+d90H	SUBS R1, #1
+		BNE d90H
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0xF4240			;Delay function (350ms)
+d90L	SUBS R1, #1
+		BNE d90L
+		BEQ check
+		;///////////////////////////////////////////////////////
 	 B    loop
 	 
 
