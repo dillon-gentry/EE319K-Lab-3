@@ -63,37 +63,37 @@ Start
 		NOP
 		NOP
 		
-		LDR R1,= GPIO_PORTE_DIR_R
+		LDR R1,= GPIO_PORTE_DIR_R    ;Code that makes PE3 an input
 		LDRB R0, [R1]
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTE_DEN_R
+		LDR R1,= GPIO_PORTE_DEN_R    ;Enables PE2 and PE3
 		LDRB R0, [R1]
 		ORR R0, #0xC
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTF_PUR_R
+		LDR R1,= GPIO_PORTF_PUR_R    ;Enables Pull Up Resistor
 		LDRB R0, [R1]
 		ORR R0, #0x10
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTF_CR_R
+		LDR R1,= GPIO_PORTF_CR_R     ;Enables Control Register
 		LDRB R0, [R1]
 		ORR R0, #0xFF
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTF_DIR_R
+		LDR R1,= GPIO_PORTF_DIR_R    ;Makes sure PF4 is 0, since its an output
 		LDRB R0, [R1]
 		AND R0, #0xEF
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTF_DEN_R
+		LDR R1,= GPIO_PORTF_DEN_R    ;Enables PF4 
 		LDRB R0, [R1]
 		ORR R0, #0x10
 		STRB R0, [R1]
 		
-		LDR R1,= GPIO_PORTF_LOCK_R
+		LDR R1,= GPIO_PORTF_LOCK_R   ;Lock and Key
 		LDR R0,= GPIO_LOCK_KEY
 		STR R0, [R1]
 		
@@ -127,8 +127,8 @@ rsw1	LDR R1,= GPIO_PORTE_DATA_R ;checks for contuious press
 check
         LDR R1,= GPIO_PORTF_DATA_R
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
+		AND R0, #0x10
+		SUBS R0, R0, #0
 		BEQ fadecod
 		
 		LDR R1,= GPIO_PORTE_DATA_R
@@ -281,21 +281,10 @@ d90L	SUBS R1, #1
 		;///////////////////////////////////////////////////////
 
 		;Stage 5 Breathing Light Code
-
-		
-fadecod	LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check   ;if not zero
-	
 		
 		
-		
-
-
-		AND R12, R12, #0
-		ADD R12, R12, #10
+fadecod	AND R12, #0
+		ADD R12, R12, #0xFFF
 fade5	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -319,12 +308,13 @@ dl5L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
 		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
         AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #0xFFF
 fade25	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -348,13 +338,14 @@ dl25L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check 
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
         
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #0xFFF
 fade50	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -378,12 +369,13 @@ dl50L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #0xFFF
 fade75	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -407,12 +399,13 @@ dl75L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         AND R12, R12, #0
-        ADD R12, R12, #20           ;20 so it loops twice
+        ADD R12, R12, #200           ;20 so it loops twice
 fade95	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -436,12 +429,13 @@ dly95L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #100
 ft75	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -470,7 +464,7 @@ dly75L	SUBS R1, #1
 		BNE check
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #100
 ft50	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -494,12 +488,13 @@ dly50L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
         AND R12, R12, #0
-        ADD R12, R12, #10
+        ADD R12, R12, #100
 ft25	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -523,12 +518,13 @@ dly25L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		AND R12, R12, #0
-		ADD R12, R12, #10
+		ADD R12, R12, #100
 ft5		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -552,10 +548,10 @@ dly5L	SUBS R1, #1
 		
 		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
 		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
+		AND R0, #0x10
+		AND R12,#0
+		SUBS R0,R12,R0
+		BNE check   ;if not zero
 
      ALIGN      ; make sure the end of this section is aligned
      END        ; end of file
-
