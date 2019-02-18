@@ -55,7 +55,7 @@ Start
  ; TExaS_Init sets bus clock at 80 MHz
      BL  TExaS_Init ; voltmeter, scope on PD3
 		
-		LDR R1,= SYSCTL_RCGCGPIO_R	;turn on clock  
+		LDR R1,=SYSCTL_RCGCGPIO_R	;turn on clock  
 		LDRB R0, [R1]				
 		ORR R0, #0x30				;Turns on clock for Port E and F
 		STRB R0, [R1]				;Stores result into RCGCGPIO addr
@@ -103,8 +103,34 @@ Start
      CPSIE  I    					;TExaS voltmeter, scope runs on interrupts
 	 
 loop  
+		AND R2,R2,#0
+		ADD R2,R2,#1
+		LDR R1,= GPIO_PORTE_DATA_R
+		LDRB R0, [R1]
+		LSR R0, #2
+		SUBS R0, #1
+		BEQ rsw
+		AND R12, #0
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
+		LDRB R0, [R1]
+		ORR R0, #0x8
+		STRB R0, [R1]
 		
-		;Continuously read PE2 bit for 1 or 0 (1 is pressed, 0 is unpressed)
+		LDR R1,= 0x2DC6C0			;Delay function (150ms)
+d30IH	SUBS R1, #1
+		BNE d30IH
+		
+		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
+		LDRB R0, [R1]
+		AND R0, #0xF7
+		STRB R0, [R1]
+		
+		LDR R1,= 0x6ACFC0			;Delay function (350ms)
+d30IL	SUBS R1, #1
+		BNE d30IL
+		BEQ loop
+		
+;Continuously read PE2 bit for 1 or 0 (1 is pressed, 0 is unpressed)
 rsw		LDR R1,= GPIO_PORTE_DATA_R
 		LDRB R0, [R1]
 		LSR R0, #2
@@ -147,9 +173,6 @@ update
 		ADD R2,R2,#1
 		
 noup    SUBS R2,R2,#1
-		BEQ dt10
-		
-		SUBS R2,R2,#1
 		BEQ dt30
 		
 		SUBS R2,R2,#1
@@ -161,12 +184,15 @@ noup    SUBS R2,R2,#1
 		SUBS R2,R2,#1
 		BEQ dt90
 		
+		SUBS R2,R2,#1
+		BEQ dt10
+		
 		AND R2,R2,#0
 		BEQ update
 	
 		;Duty Cycle for 10 %
 dt10	AND R2,R2,#0
-		ADD R2,R2,#1
+		ADD R2,R2,#5
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -176,6 +202,8 @@ dt10	AND R2,R2,#0
 		LDR R1,= 0xF4240			;Delay function (150ms)
 d10H	SUBS R1, #1
 		BNE d10H
+		
+		;if code doesn't work put check here to see if 1 or 0 (switch status)
 		
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
 		LDRB R0, [R1]
@@ -190,7 +218,7 @@ d10L	SUBS R1, #1
 		
 		;Duty Cycle for 30 %
 dt30	AND R2,R2,#0
-		ADD R2,R2,#2
+		ADD R2,R2,#1
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -213,7 +241,7 @@ d30L	SUBS R1, #1
 		
 		;Duty Cycle for 50 %
 dt50	AND R2,R2,#0
-		ADD R2,R2,#3
+		ADD R2,R2,#2
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -236,7 +264,7 @@ d50L	SUBS R1, #1
 		
 		;Duty Cycle for 70 %
 dt70	AND R2,R2,#0
-		ADD R2,R2,#4
+		ADD R2,R2,#3
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -259,7 +287,7 @@ d70L	SUBS R1, #1
 		
 		;Duty Cycle for 90 %
 dt90	AND R2,R2,#0
-		ADD R2,R2,#5
+		ADD R2,R2,#4
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -299,7 +327,7 @@ dl5H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x30958			;Delay function (350ms)
+		LDR R1,= 0x30958			;Delay function 
 dl5L	SUBS R1, #1
 		BNE dl5L
 		
@@ -313,245 +341,7 @@ dl5L	SUBS R1, #1
 		SUBS R0,R12,R0
 		BNE check   ;if not zero
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
-        AND R12, R12, #0
-        ADD R12, R12, #0xFFF
-fade25	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x1388		;Delay function (5%)
-dl25H	SUBS R1, #1
-		BNE dl25H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3A98			;Delay function (350ms)
-dl25L	SUBS R1, #1
-		BNE dl25L
-		
-		ADD R12,R12,#-1
-		BNE fade25
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-        
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        AND R12, R12, #0
-        ADD R12, R12, #0xFFF
-fade50	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x2710		;Delay function (5%)
-dl50H	SUBS R1, #1
-		BNE dl50H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x2710			;Delay function (350ms)
-dl50L	SUBS R1, #1
-		BNE dl50L
-		
-		ADD R12,R12,#-1
-		BNE fade50
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        AND R12, R12, #0
-        ADD R12, R12, #0xFFF
-fade75	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3A98		;Delay function (5%)
-dl75H	SUBS R1, #1
-		BNE dl75H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x1388			;Delay function (350ms)
-dl75L	SUBS R1, #1
-		BNE dl75L
-		
-		ADD R12,R12,#-1
-		BNE fade75
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        AND R12, R12, #0
-        ADD R12, R12, #200           ;20 so it loops twice
-fade95	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x30958		;Delay function
-dly95H	SUBS R1, #1
-		BNE dly95H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3E8			;Delay function
-dly95L	SUBS R1, #1
-		BNE dly95L
-		
-		ADD R12,R12,#-1
-		BNE fade95
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-		AND R12, R12, #0
-        ADD R12, R12, #100
-ft75	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3A98		;Delay function (5%)
-dly75H	SUBS R1, #1
-		BNE dly75H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x1388			;Delay function (350ms)
-dly75L	SUBS R1, #1
-		BNE dly75L
-		
-		ADD R12,R12,#-1
-		BNE ft75
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		LSR R0, #4
-		SUBS R0,R12, R0
-		BNE check
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        AND R12, R12, #0
-        ADD R12, R12, #100
-ft50	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x2710		;Delay function (5%)
-dly50H	SUBS R1, #1
-		BNE dly50H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x2710			;Delay function (350ms)
-dly50L	SUBS R1, #1
-		BNE dly50L
-		
-		ADD R12,R12,#-1
-		BNE ft50
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		
-        AND R12, R12, #0
-        ADD R12, R12, #100
-ft25	LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x1388		;Delay function (5%)
-dly25H	SUBS R1, #1
-		BNE dly25H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3A98			;Delay function (350ms)
-dly25L	SUBS R1, #1
-		BNE dly25L
-		
-		ADD R12,R12,#-1
-		BNE ft25
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-		AND R12, R12, #0
-		ADD R12, R12, #100
-ft5		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x3E8			;Delay function (5%)
-dly5H	SUBS R1, #1
-		BNE dly5H
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x30958			;Delay function (350ms)
-dly5L	SUBS R1, #1
-		BNE dly5L
-		
-		ADD R12,R12,#-1
-		BNE ft5
-		
-		LDR R1,= GPIO_PORTF_DATA_R ;checks for contuious press 
-		LDRB R0, [R1]
-		AND R0, #0x10
-		AND R12,#0
-		SUBS R0,R12,R0
-		BNE check   ;if not zero
+
 
      ALIGN      ; make sure the end of this section is aligned
      END        ; end of file
