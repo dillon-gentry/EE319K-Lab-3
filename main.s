@@ -116,7 +116,7 @@ loop
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x2DC6C0			;Delay function (150ms)
+		LDR R1,= 0x1E601B  ;2E3205  			;Delay function (150ms)
 d30IH	SUBS R1, #1
 		BNE d30IH
 		
@@ -125,7 +125,7 @@ d30IH	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x6ACFC0			;Delay function (350ms)
+		LDR R1,= 0x46E23C  ;6AA362   			;Delay function (350ms)
 d30IL	SUBS R1, #1
 		BNE d30IL
 		BEQ loop
@@ -188,7 +188,8 @@ noup    SUBS R2,R2,#1
 		BEQ dt10
 		
 		AND R2,R2,#0
-		BEQ update
+		
+		BNE update
 	
 		;Duty Cycle for 10 %
 dt10	AND R2,R2,#0
@@ -199,7 +200,7 @@ dt10	AND R2,R2,#0
 		STRB R0, [R1]
 		
 		
-		LDR R1,= 0xF4240			;Delay function (150ms)
+		LDR R1,= 0xA3002 ;0xF6602			;Delay function (50 ms)
 d10H	SUBS R1, #1
 		BNE d10H
 		
@@ -210,7 +211,7 @@ d10H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x895440			;Delay function (350ms)
+		LDR R1,= 0x5B284F ;0x88960F			;Delay function (450ms)
 d10L	SUBS R1, #1
 		BNE d10L
 		BEQ check
@@ -224,7 +225,7 @@ dt30	AND R2,R2,#0
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x2DC6C0			;Delay function (150ms)
+		LDR R1,= 0x1E601B ;2E3205			;Delay function (150ms)
 d30H	SUBS R1, #1
 		BNE d30H
 		
@@ -233,7 +234,7 @@ d30H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x6ACFC0			;Delay function (350ms)
+		LDR R1,= 0x46E23C  ;6AA362			;Delay function (350ms)
 d30L	SUBS R1, #1
 		BNE d30L
 		BEQ check
@@ -247,7 +248,7 @@ dt50	AND R2,R2,#0
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x4C4B40			;Delay function (150ms)
+		LDR R1,= 0x5B2E08 ;6CFE08			;Delay function (250ms)
 d50H	SUBS R1, #1
 		BNE d50H
 		
@@ -256,7 +257,7 @@ d50H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x4C4B40			;Delay function (350ms)
+		LDR R1,= 0x5B2E08  ;6CFE08			;Delay function (250ms)
 d50L	SUBS R1, #1
 		BNE d50L
 		BEQ check
@@ -270,7 +271,7 @@ dt70	AND R2,R2,#0
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x6ACFC0			;Delay function (150ms)
+		LDR R1,= 0x7FE23C  ;6AA362			;Delay function (350ms)
 d70H	SUBS R1, #1
 		BNE d70H
 		
@@ -279,7 +280,7 @@ d70H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0x2DC6C0			;Delay function (350ms)
+		LDR R1,= 0x36601B ;2E3205			;Delay function (150ms)
 d70L	SUBS R1, #1
 		BNE d70L
 		BEQ check
@@ -293,7 +294,7 @@ dt90	AND R2,R2,#0
 		ORR R0, #0x8
 		STRB R0, [R1]
 		
-		LDR R1,= 0x895440			;Delay function (150ms)
+		LDR R1,= 0x5B284F ;0x88960F			;Delay function (450ms)
 d90H	SUBS R1, #1
 		BNE d90H
 		
@@ -302,7 +303,7 @@ d90H	SUBS R1, #1
 		AND R0, #0xF7
 		STRB R0, [R1]
 		
-		LDR R1,= 0xF4240			;Delay function (350ms)
+		LDR R1,= 0xA3002 ;0xF6602			;Delay function (50ms)
 d90L	SUBS R1, #1
 		BNE d90L
 		BEQ check
