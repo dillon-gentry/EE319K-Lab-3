@@ -1,5 +1,5 @@
 ;****************** main.s ***************
-; Program written by: ***Your Names**update this***
+; Program written by: Jordon and Dillon
 ; Date Created: 2/4/2017
 ; Last Modified: 1/18/2019
 ; Brief description of the program
@@ -102,43 +102,11 @@ Start
 		
      CPSIE  I    					;TExaS voltmeter, scope runs on interrupts
 	 
-loop  
+
+		
 		AND R2,R2,#0
 		ADD R2,R2,#1
-		LDR R1,= GPIO_PORTE_DATA_R
-		LDRB R0, [R1]
-		LSR R0, #2
-		SUBS R0, #1
-		BEQ rsw
-		AND R12, #0
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
-		LDRB R0, [R1]
-		ORR R0, #0x8
-		STRB R0, [R1]
-		
-		LDR R1,= 0x1E601B  ;2E3205  			;Delay function (30 high)
-d30IH	LDR R3,= GPIO_PORTF_DATA_R				;check PF4
-		LDRB R0, [R3]
-		AND R0, #0x10
-		SUBS R0, #0x10
-		BNE brjump
-		SUBS R1, #1
-		BNE d30IH
-		
-		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 low
-		LDRB R0, [R1]
-		AND R0, #0xF7
-		STRB R0, [R1]
-		
-		LDR R1,= 0x46E23C  ;6AA362   			;Delay function (30 low)
-d30IL	LDR R3,= GPIO_PORTF_DATA_R				;check PF4
-		LDRB R0, [R3]
-		AND R0, #0x10
-		SUBS R0, #0x10
-		BNE brjump		
-		SUBS R1, #1
-		BNE d30IL
-		BEQ loop
+		BNE dt30
 		
 ;Continuously read PE2 bit for 1 or 0 (1 is pressed, 0 is unpressed)
 rsw		LDR R1,= GPIO_PORTE_DATA_R
@@ -165,7 +133,7 @@ check
 		LDRB R0, [R1]
 		AND R0, #0x10
 		SUBS R0, R0, #0
-		BEQ brjump
+		BEQ brled
 		
 		LDR R1,= GPIO_PORTE_DATA_R
 		LDRB R0, [R1]
@@ -183,9 +151,6 @@ update
 		ADD R2,R2,#1
 		
 noup    SUBS R2,R2,#1
-		BEQ dt30
-		
-		SUBS R2,R2,#1
 		BEQ dt50
 		
 		SUBS R2,R2,#1
@@ -197,16 +162,16 @@ noup    SUBS R2,R2,#1
 		SUBS R2,R2,#1
 		BEQ dt10
 		
+		SUBS R2,R2,#1
+		BEQ dt30
+		
 		AND R2,R2,#0
 		
 		BNE update
 	
-brjump	B brled 
-
-
 		;Duty Cycle for 10 %
 dt10	AND R2,R2,#0
-		ADD R2,R2,#5
+		ADD R2,R2,#4
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -232,7 +197,7 @@ d10L	SUBS R1, #1
 		
 		;Duty Cycle for 30 %
 dt30	AND R2,R2,#0
-		ADD R2,R2,#1
+		ADD R2,R2,#5
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -255,7 +220,7 @@ d30L	SUBS R1, #1
 		
 		;Duty Cycle for 50 %
 dt50	AND R2,R2,#0
-		ADD R2,R2,#2
+		ADD R2,R2,#1
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -278,7 +243,7 @@ d50L	SUBS R1, #1
 		
 		;Duty Cycle for 70 %
 dt70	AND R2,R2,#0
-		ADD R2,R2,#3
+		ADD R2,R2,#2
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -301,7 +266,7 @@ d70L	SUBS R1, #1
 		
 		;Duty Cycle for 90 %
 dt90	AND R2,R2,#0
-		ADD R2,R2,#4
+		ADD R2,R2,#3
 		LDR R1,= GPIO_PORTE_DATA_R	;Set PE3 high
 		LDRB R0, [R1]
 		ORR R0, #0x8
@@ -322,8 +287,7 @@ d90L	SUBS R1, #1
 		BEQ check
 		;///////////////////////////////////////////////////////
 
-		;Stage 5 Breathing Light Code
-cnvlog		
+		;Stage 5 Breathing Light Code		
 		
 brled
 		AND R1,#0			;R1 will be downtime
@@ -345,7 +309,7 @@ up		LDR R3,= GPIO_PORTF_DATA_R		;delay uptime
 		LDRB R0, [R3]
 		ORR R0, #0xEF
 		SUBS R0, #0xEF
-		BNE loop
+		BNE dt30
 		SUBS R4, #1
 		BNE up
 		
@@ -358,7 +322,7 @@ dwn		LDR R3,= GPIO_PORTF_DATA_R		;delay downtime
 		LDRB R0, [R3]
 		ORR R0, #0xEF
 		SUBS R0, #0xEF
-		BNE loop
+		BNE dt30
 		SUBS R5, #1
 		BNE dwn				
 		
@@ -384,7 +348,7 @@ exup	LDR R3,= GPIO_PORTF_DATA_R		;delay uptime
 		LDRB R0, [R3]
 		ORR R0, #0xEF
 		SUBS R0, #0xEF
-		BNE loop
+		BNE dt30
 		SUBS R5, #1
 		BNE exup
 		
@@ -397,7 +361,7 @@ exdwn	LDR R3,= GPIO_PORTF_DATA_R		;delay downtime
 		LDRB R0, [R3]
 		ORR R0, #0xEF
 		SUBS R0, #0xEF
-		BNE loop
+		BNE dt30
 		SUBS R4, #1
 		BNE exdwn				
 		
